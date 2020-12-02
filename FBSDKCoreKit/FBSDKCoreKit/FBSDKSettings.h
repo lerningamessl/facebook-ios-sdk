@@ -59,6 +59,9 @@ FOUNDATION_EXPORT FBSDKLoggingBehavior FBSDKLoggingBehaviorNetworkRequests;
 /** Log errors likely to be preventable by the developer. This is in the default set of enabled logging behaviors. */
 FOUNDATION_EXPORT FBSDKLoggingBehavior FBSDKLoggingBehaviorDeveloperErrors;
 
+
+typedef NSString *_Nonnull (^FBSDKAdvertisingIdentifierBlock)(void);
+
 NS_SWIFT_NAME(Settings)
 @interface FBSDKSettings : NSObject
 
@@ -109,6 +112,17 @@ DEPRECATED_MSG_ATTRIBUTE("Auto-initialization will be removed in the next major 
  If not explicitly set, the default is true
  */
 @property (class, nonatomic, assign, getter=isAdvertiserIDCollectionEnabled) BOOL advertiserIDCollectionEnabled;
+
+/**
+ Sets a block to be called when IDFA / AdSupport identifier is needed.
+ This is to allow for apps that do not want ad tracking to pass App Store guidelines in certain categories while still allowing apps that do ad tracking to continue to function.
+ 
+ Example:
+ FBSDKSettings.advertiserIDBlock = ^{
+    return [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+ };
+ */
+@property (class, nonatomic, strong) FBSDKAdvertisingIdentifierBlock advertiserIDBlock;
 
 /**
  Whether data such as that generated through FBSDKAppEvents and sent to Facebook

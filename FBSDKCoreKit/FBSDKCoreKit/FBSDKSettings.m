@@ -77,6 +77,7 @@ static NSString *g_defaultGraphAPIVersion;
 static FBSDKAccessTokenExpirer *g_accessTokenExpirer;
 static NSDictionary<NSString *, id> *g_dataProcessingOptions = nil;
 static NSNumber *g_advertiserTrackingStatus = nil;
+static FBSDKAdvertisingIdentifierBlock _advertiserIDBlock;
 
 //
 // Warning messages for App Event Flags
@@ -199,6 +200,14 @@ FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(
 + (void)setAdvertiserIDCollectionEnabled:(BOOL)advertiserIDCollectionEnabled
 {
   [self _setAdvertiserIDCollectionEnabled:@(advertiserIDCollectionEnabled)];
+}
+
++ (void)setAdvertiserIDBlock:(FBSDKAdvertisingIdentifierBlock)advertiserIDBlock {
+  _advertiserIDBlock = advertiserIDBlock;
+}
+
++ (FBSDKAdvertisingIdentifierBlock)advertiserIDBlock {
+  return _advertiserIDBlock;
 }
 
 + (BOOL)isAdvertiserTrackingEnabled

@@ -18,8 +18,6 @@
 
 #import "FBSDKSettings+Internal.h"
 
-#import <AdSupport/AdSupport.h>
-
 #import "FBSDKAccessTokenCache.h"
 #import "FBSDKAccessTokenExpirer.h"
 #import "FBSDKAppEvents+Internal.h"
@@ -78,6 +76,7 @@ static FBSDKAccessTokenExpirer *g_accessTokenExpirer;
 static NSDictionary<NSString *, id> *g_dataProcessingOptions = nil;
 static NSNumber *g_advertiserTrackingStatus = nil;
 static FBSDKAdvertisingIdentifierBlock _advertiserIDBlock;
+static FBSDKIDFATrackingEnabledBlock _trackingEnabledBlock;
 
 //
 // Warning messages for App Event Flags
@@ -202,6 +201,14 @@ FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(
   [self _setAdvertiserIDCollectionEnabled:@(advertiserIDCollectionEnabled)];
 }
 
++ (void)setTrackingEnabledBlock:(FBSDKIDFATrackingEnabledBlock)trackingEnabledBlock {
+  _trackingEnabledBlock = trackingEnabledBlock;
+}
+
++ (FBSDKIDFATrackingEnabledBlock)trackingEnabledBlock {
+  return _trackingEnabledBlock;
+}
+
 + (void)setAdvertiserIDBlock:(FBSDKAdvertisingIdentifierBlock)advertiserIDBlock {
   _advertiserIDBlock = advertiserIDBlock;
 }
@@ -235,7 +242,11 @@ FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(
     return g_advertiserTrackingStatus.unsignedIntegerValue;
   } else {
     // @lint-ignore CLANGTIDY
-    return ASIdentifierManager.sharedManager.advertisingTrackingEnabled ? FBSDKAdvertisingTrackingAllowed : FBSDKAdvertisingTrackingDisallowed;
+    if (_trackingEnabledBlock != nil) {
+      return _trackingEnabledBlock() ? FBSDKAdvertisingTrackingAllowed : FBSDKAdvertisingTrackingDisallowed;
+    } else {
+      return FBSDKAdvertisingTrackingDisallowed;
+    }
   }
 }
 

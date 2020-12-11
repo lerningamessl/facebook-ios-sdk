@@ -61,6 +61,7 @@ FOUNDATION_EXPORT FBSDKLoggingBehavior FBSDKLoggingBehaviorDeveloperErrors;
 
 
 typedef NSString *_Nonnull (^FBSDKAdvertisingIdentifierBlock)(void);
+typedef BOOL *_Nonnull (^FBSDKIDFATrackingEnabledBlock)(void);
 
 NS_SWIFT_NAME(Settings)
 @interface FBSDKSettings : NSObject
@@ -115,7 +116,8 @@ DEPRECATED_MSG_ATTRIBUTE("Auto-initialization will be removed in the next major 
 
 /**
  Sets a block to be called when IDFA / AdSupport identifier is needed.
- This is to allow for apps that do not want ad tracking to pass App Store guidelines in certain categories while still allowing apps that do ad tracking to continue to function.
+ This is to allow for apps that do not want ad tracking to pass App Store guidelines in certain
+ categories while still allowing apps that do ad tracking to continue to function.
  
  Example:
  FBSDKSettings.advertiserIDBlock = ^{
@@ -123,6 +125,19 @@ DEPRECATED_MSG_ATTRIBUTE("Auto-initialization will be removed in the next major 
  };
  */
 @property (class, nonatomic, strong) FBSDKAdvertisingIdentifierBlock advertiserIDBlock;
+
+
+/**
+ Sets a block to be called when sdk checks if advertising tracking is enabled.
+ This is to allow for apps that do not want ad tracking to pass App Store guidelines in certain
+ categories while still allowing apps that do ad tracking to continue to function.
+ 
+ Example:
+ FBSDKSettings.trackingEnabledBlock = ^{
+    return ASIdentifierManager.sharedManager.advertisingTrackingEnabled;
+ };
+ */
+@property (class, nonatomic, strong) FBSDKIDFATrackingEnabledBlock trackingEnabledBlock;
 
 /**
  Whether data such as that generated through FBSDKAppEvents and sent to Facebook

@@ -16,8 +16,27 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKTVShareButtonElement.h"
+#import <Foundation/Foundation.h>
 
-@implementation FBSDKTVShareButtonElement
+NS_ASSUME_NONNULL_BEGIN
+
+@interface FBSDKAuthenticationTokenHeader : NSObject
+
+/// Value that represents the algorithm that was used to sign the JWT.
+@property (nonatomic, readonly, strong) NSString *alg;
+
+/// The type of the JWT.
+@property (nonatomic, readonly, strong) NSString *typ;
+
+/// Key identifier used in identifying the key to be used to verify the signature.
+@property (nonatomic, readonly, strong) NSString *kid;
+
+/**
+ Returns a new instance, when one can be created from the parameters given, otherwise `nil`.
+ @param encodedHeader Base64-encoded string of the header.
+ */
++ (nullable FBSDKAuthenticationTokenHeader *)validatedHeaderWithEncodedString:(NSString *)encodedHeader;
 
 @end
+
+NS_ASSUME_NONNULL_END

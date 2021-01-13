@@ -18,5 +18,63 @@
 
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
 
-#import "FBSDKLoginConfiguration.h"
-#import "FBSDKNonceUtility.h"
+#import "FBSDKCoreKit+Internal.h"
+
+#ifdef BUCK
+ #import <FBSDKLoginKit+Internal/FBSDKGraphRequestConnectionProviding.h>
+ #import <FBSDKLoginKit+Internal/FBSDKNonceUtility.h>
+ #import <FBSDKLoginKit+Internal/FBSDKPermission.h>
+#else
+ #import "FBSDKGraphRequestConnectionProviding.h"
+ #import "FBSDKNonceUtility.h"
+ #import "FBSDKPermission.h"
+#endif
+
+@class FBSDKAuthenticationTokenClaims;
+
+NS_ASSUME_NONNULL_BEGIN
+
+// Categories needed to expose private methods to Swift
+
+@interface FBSDKLoginButton (Testing)
+
+- (FBSDKLoginConfiguration *)loginConfiguration;
+- (BOOL)_isAuthenticated;
+- (void)_fetchAndSetContent;
+- (void)_initializeContent;
+- (void)_updateContentForAccessToken;
+- (void)_updateContentForUserProfile:(nullable FBSDKProfile *)profile;
+- (void)_accessTokenDidChangeNotification:(NSNotification *)notification;
+- (void)_profileDidChangeNotification:(NSNotification *)notification;
+- (nullable NSString *)userName;
+- (nullable NSString *)userID;
+
+@end
+
+@interface FBSDKAccessToken (Testing)
+
++ (void)setCurrentAccessToken:(nullable FBSDKAccessToken *)token
+          shouldDispatchNotif:(BOOL)shouldDispatchNotif;
+
+@end
+
+@interface FBSDKProfile (Testing)
+
++ (void)setCurrentProfile:(nullable FBSDKProfile *)profile
+   shouldPostNotification:(BOOL)shouldPostNotification;
+
+@end
+
+@interface FBSDKAuthenticationToken (Testing)
+
+- (instancetype)initWithTokenString:(NSString *)tokenString
+                              nonce:(NSString *)nonce
+                             claims:(nullable FBSDKAuthenticationTokenClaims *)claims
+                                jti:(NSString *)jti;
+
++ (void)setCurrentAuthenticationToken:(nullable FBSDKAuthenticationToken *)token
+               shouldPostNotification:(BOOL)shouldPostNotification;
+
+@end
+
+NS_ASSUME_NONNULL_END

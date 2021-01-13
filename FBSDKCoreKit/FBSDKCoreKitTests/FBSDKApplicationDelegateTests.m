@@ -80,7 +80,6 @@
 
   [_delegate resetApplicationObserverCache];
 
-  [self stubAppEventsSingletonWith:self.appEventsMock];
   [self stubLoadingAdNetworkReporterConfiguration];
 
   [self stubServerConfigurationFetchingWithConfiguration:FBSDKServerConfigurationFixtures.defaultConfig error:nil];
@@ -178,8 +177,9 @@
 - (void)testDidFinishLaunchingSetsCurrentAccessTokenWithCache
 {
   FBSDKAccessToken *expected = SampleAccessToken.validToken;
-  FakeAccessTokenCache *cache = [[FakeAccessTokenCache alloc] initWithToken:expected];
-  [self stubAccessTokenCacheWith:cache];
+  FakeTokenCache *cache = [[FakeTokenCache alloc] initWithAccessToken:expected
+                                                  authenticationToken:nil];
+  [self stubTokenCacheWith:cache];
 
   [_delegate application:UIApplication.sharedApplication didFinishLaunchingWithOptions:nil];
 
@@ -189,12 +189,36 @@
 
 - (void)testDidFinishLaunchingSetsCurrentAccessTokenWithoutCache
 {
-  [self stubAccessTokenCacheWith:[[FakeAccessTokenCache alloc] initWithToken:nil]];
+  [self stubTokenCacheWith:[[FakeTokenCache alloc] initWithAccessToken:nil authenticationToken:nil]];
 
   [_delegate application:UIApplication.sharedApplication didFinishLaunchingWithOptions:nil];
 
   // Should set the current access token to nil access token when there isn't a cached token
   OCMVerify(ClassMethod([self.accessTokenClassMock setCurrentAccessToken:nil]));
+}
+
+- (void)testDidFinishLaunchingSetsCurrentAuthenticationTokenWithCache
+{
+  FBSDKAuthenticationToken *expected = SampleAuthenticationToken.validToken;
+  FakeTokenCache *cache = [[FakeTokenCache alloc] initWithAccessToken:nil
+                                                  authenticationToken:expected];
+  [self stubTokenCacheWith:cache];
+
+  [_delegate application:UIApplication.sharedApplication didFinishLaunchingWithOptions:nil];
+
+  // Should set the current authentication token to the cached access token when it exists
+  OCMVerify(ClassMethod([self.authenticationTokenClassMock setCurrentAuthenticationToken:expected]));
+}
+
+- (void)testDidFinishLaunchingSetsCurrentAuthenticationTokenWithoutCache
+{
+  FakeTokenCache *cache = [[FakeTokenCache alloc] initWithAccessToken:nil authenticationToken:nil];
+  [self stubTokenCacheWith:cache];
+
+  [_delegate application:UIApplication.sharedApplication didFinishLaunchingWithOptions:nil];
+
+  // Should set the current authentication token to nil access token when there isn't a cached token
+  OCMVerify(ClassMethod([self.authenticationTokenClassMock setCurrentAuthenticationToken:nil]));
 }
 
 - (void)testDidFinishLaunchingLoadsServerConfiguration
@@ -273,60 +297,6 @@
   BOOL notifiedObservers = [_delegate application:UIApplication.sharedApplication didFinishLaunchingWithOptions:nil];
 
   XCTAssertFalse(notifiedObservers, "Should indicate if no observers were notified");
-}
-
-- (void)testDidFinishLaunchingCalledFromAutoInit
-{
-  // Should not log that the SDK implements didFinishLaunching manually
-  OCMReject(
-    ClassMethod(
-      [self.appEventsMock logInternalEvent:@"fb_sdk_implements_did_finish_launching"
-                                parameters:@{}
-                        isImplicitlyLogged:OCMOCK_VALUE(YES)]
-    )
-  );
-
-  // Stub all the dependencies of initializing SDK
-  [self stubFBApplicationDelegateSharedInstanceWith:_delegate];
-  [self stubRegisterAppForAdNetworkAttribution];
-  [self stubDefaultNotificationCenterWith:_notificationCenterSpy];
-  OCMStub([_partialDelegateMock applicationDidBecomeActive:UIApplication.sharedApplication]);
-  [self stubCheckingFeatures];
-  [self stubDefaultMeasurementEventListenerWith:[FBSDKMeasurementEventListener new]];
-  [self stubCachedProfileWith:nil];
-  OCMStub([self.timeSpentDataClassMock setSourceApplication:OCMArg.any openURL:OCMArg.any]);
-  OCMStub([self.timeSpentDataClassMock registerAutoResetSourceApplication]);
-  OCMStub([self.internalUtilityClassMock validateFacebookReservedURLSchemes]);
-
-  NSDictionary *launchOptions = @{};
-  ApplicationDelegateObserverFake *observer = [ApplicationDelegateObserverFake new];
-  [_delegate addObserver:observer];
-  [FBSDKApplicationDelegate initializeSDK:launchOptions];
-
-  XCTAssertEqualObjects(observer.capturedLaunchOptions, @{}, "Observers should not be passed the modified launch arguments.");
-  // Should Modify the launch arguments when didFinishLaunching is invoked from the `initializeSDK` method
-  OCMVerify(
-    [_partialDelegateMock application:UIApplication.sharedApplication
-        didFinishLaunchingWithOptions:@{@"_calledFromAutoInitSDK" : @YES}]
-  );
-}
-
-- (void)testDidFinishLaunchingCalledManually
-{
-  NSDictionary *launchOptions = @{@"foo" : @"bar"};
-  ApplicationDelegateObserverFake *observer = [ApplicationDelegateObserverFake new];
-  [_delegate addObserver:observer];
-  [FBSDKApplicationDelegate.sharedInstance application:UIApplication.sharedApplication
-                         didFinishLaunchingWithOptions:launchOptions];
-
-  XCTAssertEqualObjects(observer.capturedLaunchOptions, @{@"foo" : @"bar"}, "Observers should not be passed modified launch arguments.");
-  OCMVerify(
-    ClassMethod(
-      [self.appEventsMock logInternalEvent:@"fb_sdk_implements_did_finish_launching"
-                                parameters:@{}
-                        isImplicitlyLogged:OCMOCK_VALUE(YES)]
-    )
-  );
 }
 
 - (void)testAppEventsEnabled

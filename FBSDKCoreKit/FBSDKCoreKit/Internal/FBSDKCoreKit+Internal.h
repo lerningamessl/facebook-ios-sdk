@@ -36,6 +36,7 @@
 
  #if !TARGET_OS_TV
   #import "FBSDKAudioResourceLoader.h"
+  #import "FBSDKAuthenticationStatusUtility.h"
   #import "FBSDKBridgeAPI.h"
   #import "FBSDKBridgeAPI+Internal.h"
   #import "FBSDKCloseIcon.h"
@@ -62,8 +63,6 @@
  #endif
 
  #import "FBSDKAccessToken+Internal.h"
- #import "FBSDKAccessTokenCache.h"
- #import "FBSDKAccessTokenCaching.h"
  #import "FBSDKAppEvents+Internal.h"
  #import "FBSDKAppEventsConfiguration.h"
  #import "FBSDKAppEventsConfigurationManager.h"
@@ -72,6 +71,11 @@
  #import "FBSDKAppEventsUtility.h"
  #import "FBSDKApplicationDelegate+Internal.h"
  #import "FBSDKApplicationObserving.h"
+ #import "FBSDKAuthenticationStatusUtility.h"
+ #import "FBSDKAuthenticationToken+Internal.h"
+ #import "FBSDKAuthenticationTokenClaims.h"
+ #import "FBSDKAuthenticationTokenFactory.h"
+ #import "FBSDKAuthenticationTokenHeader.h"
  #import "FBSDKBase64.h"
  #import "FBSDKButton+Subclass.h"
  #import "FBSDKDeviceRequestsHelper.h"
@@ -104,6 +108,8 @@
  #import "FBSDKSettings+Internal.h"
  #import "FBSDKSwizzler.h"
  #import "FBSDKTimeSpentData.h"
+ #import "FBSDKTokenCache.h"
+ #import "FBSDKTokenCaching.h"
 
 #else
 
@@ -118,6 +124,7 @@
   #import "BridgeAPI/FBSDKBridgeAPI+Internal.h"
   #import "Cryptography/FBSDKCrypto.h"
   #import "FBSDKAudioResourceLoader.h"
+  #import "FBSDKAuthenticationStatusUtility.h"
   #import "FBSDKContainerViewController.h"
   #import "FBSDKMonotonicTime.h"
   #import "UI/FBSDKCloseIcon.h"
@@ -148,6 +155,10 @@
  #import "FBSDKAccessToken+Internal.h"
  #import "FBSDKApplicationDelegate+Internal.h"
  #import "FBSDKApplicationObserving.h"
+ #import "FBSDKAuthenticationToken+Internal.h"
+ #import "FBSDKAuthenticationTokenClaims.h"
+ #import "FBSDKAuthenticationTokenFactory.h"
+ #import "FBSDKAuthenticationTokenHeader.h"
  #import "FBSDKDeviceRequestsHelper.h"
  #import "FBSDKDynamicFrameworkLoader.h"
  #import "FBSDKError.h"
@@ -171,10 +182,10 @@
  #import "ServerConfiguration/FBSDKServerConfiguration+Internal.h"
  #import "ServerConfiguration/FBSDKServerConfigurationManager.h"
  #import "ServerConfiguration/FBSDKServerConfigurationManager+Internal.h"
- #import "TokenCaching/FBSDKAccessTokenCache.h"
- #import "TokenCaching/FBSDKAccessTokenCaching.h"
  #import "TokenCaching/FBSDKKeychainStore.h"
  #import "TokenCaching/FBSDKKeychainStoreViaBundleID.h"
+ #import "TokenCaching/FBSDKTokenCache.h"
+ #import "TokenCaching/FBSDKTokenCaching.h"
  #import "UI/FBSDKButton+Subclass.h"
  #import "UI/FBSDKIcon.h"
  #import "UI/FBSDKLogo.h"

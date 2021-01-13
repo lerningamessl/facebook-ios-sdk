@@ -16,29 +16,42 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "TargetConditionals.h"
-
-#if TARGET_OS_TV
-
-#import "FBSDKCoreKitImport.h"
-
-#import "FBSDKSharingContent.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-DEVICE_SHARING_DEPRECATED
-NS_SWIFT_NAME(FBDeviceShareButton)
-@interface FBSDKDeviceShareButton : FBSDKDeviceButton
+/**
+ Represent an AuthenticationToken used for a login attempt
+*/
+NS_SWIFT_NAME(AuthenticationToken)
+@interface FBSDKAuthenticationToken : NSObject<NSSecureCoding>
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 /**
-  The required content to share. The button is disabled until this is set.
+  The "global" authentication token that represents the currently logged in user.
 
- @see FBSDKDeviceShareViewController
+ The `currentAuthenticationToken` represents the authentication token of the
+ current user and can be used by a client to verify an authentication attempt.
  */
-@property (nullable, nonatomic, strong) id<FBSDKSharingContent> shareContent;
+@property (class, nonatomic, copy, nullable) FBSDKAuthenticationToken *currentAuthenticationToken;
+
+/**
+ The raw token string from the authentication response
+ */
+@property (nonatomic, copy, readonly) NSString *tokenString;
+
+/**
+ The nonce from the decoded authentication response
+ */
+@property (nonatomic, copy, readonly) NSString *nonce;
+
+/**
+  The graph domain where the user is authenticated.
+ */
+@property (nonatomic, copy, readonly) NSString *graphDomain;
 
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

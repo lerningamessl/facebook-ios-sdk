@@ -29,7 +29,7 @@
 #import "FBSDKServerConfiguration.h"
 #import "FBSDKServerConfigurationManager.h"
 
-@class FakeAccessTokenCache;
+@class FakeTokenCache;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,8 +56,14 @@ Also, to get a better understanding of mocking, please read the documentation at
 /// Used for sharing an `FBSDKAccessToken` class mock between tests
 @property (nullable, assign) id accessTokenClassMock;
 
+/// Used for sharing an `FBSDKAuthenticationToken` class mock between tests
+@property (nullable, assign) id authenticationTokenClassMock;
+
 /// Used for sharing a common app identifier between tests. This is not a valid FB App ID
 @property (nullable, assign) NSString *appID;
+
+/// Used during `-setUp` to determine the type of mock for `appEventsMock` (partial or nice), default is `NO`
+@property (assign) BOOL shouldAppEventsMockBePartial;
 
 /// Used for sharing an `FBSDKAppEvents` mock between tests
 @property (nullable, assign) id appEventsMock;
@@ -158,9 +164,6 @@ Also, to get a better understanding of mocking, please read the documentation at
 /// Stubs `FBSDKSettings.isSDKInitialized` and return the provided value
 - (void)stubIsSDKInitialized:(BOOL)initialized;
 
-/// Stubs `FBSDKSettings.isAutoInitEnabled` and return the provided value
-- (void)stubIsAutoInitEnabled:(BOOL)isEnabled;
-
 /// Stubs `FBSDKSettings.isAutoLogAppEventsEnabled` and return the provided value
 - (void)stubIsAutoLogAppEventsEnabled:(BOOL)isEnabled;
 
@@ -194,8 +197,8 @@ Also, to get a better understanding of mocking, please read the documentation at
 /// Prevents logging on changes to Settings properties
 - (void)stubLoggingIfUserSettingsChanged;
 
-/// Stubs `FBSDKSettings.accessTokenCache`
-- (void)stubAccessTokenCacheWith:(FakeAccessTokenCache *)cache;
+/// Stubs `FBSDKSettings.tokenCache`
+- (void)stubTokenCacheWith:(FakeTokenCache *)cache;
 
 /// Stubs `FBSDKProfile.fetchCachedProfile`
 - (void)stubCachedProfileWith:(FBSDKProfile *__nullable)profile;
@@ -209,9 +212,6 @@ Also, to get a better understanding of mocking, please read the documentation at
 /// Stubs `NSNotificationCenter.defaultCenter` and returns the provided notification center
 - (void)stubDefaultNotificationCenterWith:(NSNotificationCenter *)notificationCenter;
 
-/// Stubs `AppEvents.singleton` and return the provided app events instance
-- (void)stubAppEventsSingletonWith:(FBSDKAppEvents *)appEventsInstance;
-
 /// Stubs `MeasurementEventListener.defaultListener` and returns the provided listener.
 - (void)stubDefaultMeasurementEventListenerWith:(FBSDKMeasurementEventListener *)eventListener;
 
@@ -220,6 +220,9 @@ Also, to get a better understanding of mocking, please read the documentation at
 
 /// Stubs `FBSDKAccessToken.currentAccessToken` with the provided token
 - (void)stubCurrentAccessTokenWith:(nullable FBSDKAccessToken *)token;
+
+/// Stubs `FBSDKAuthenticationToken.currentAuthenticationToken` with the provided token
+- (void)stubCurrentAuthenticationTokenWith:(nullable FBSDKAuthenticationToken *)token;
 
 /// Stubs `FBSDKSettings.clientToken` with the provided token string
 - (void)stubClientTokenWith:(nullable NSString *)token;
@@ -263,12 +266,6 @@ Also, to get a better understanding of mocking, please read the documentation at
 
 /// Stubs `FBSDKSettings.isDataProcessingRestricted` and returns the provided value
 - (void)stubIsDataProcessingRestricted:(BOOL)isRestricted;
-
-/// Stubs `NSDate`'s `date` method to return the shared date mock
-- (void)stubDate;
-
-/// Stubs `NSDate`'s `timeIntervalSince1970` method and returns the provided time interval
-- (void)stubTimeIntervalSince1970WithTimeInterval:(NSTimeInterval)interval;
 
 /// Stubs `FBSDKSettings.facebookDomainPart` with the provided value
 - (void)stubFacebookDomainPartWith:(NSString *)domainPart;

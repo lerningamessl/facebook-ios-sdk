@@ -25,8 +25,11 @@
 #import "FBSDKSKAdNetworkEvent.h"
 #import "FBSDKSKAdNetworkRule.h"
 #import "FBSDKServerConfigurationFixtures.h"
+#import "FBSDKSessionProviding.h"
 #import "FBSDKTestCase.h"
 #import "FakeBundle.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 // Interfaces for Swift extensions on Objective-C Test classes
 @interface FBSDKAppEventsUtilityTests : FBSDKTestCase
@@ -34,12 +37,60 @@
 
 // Categories needed to expose private methods to Swift
 @interface FBSDKAppEventsConfigurationManager (Testing)
-+ (void)_processResponse:(id)response error:(NSError *)error;
+
++ (void)_processResponse:(id)response error:(nullable NSError *)error;
+
 @end
 
 @interface FBSDKCloseIcon (Testing)
-- (UIImage *)imageWithSize:(CGSize)size
-              primaryColor:(UIColor *)primaryColor
-            secondaryColor:(UIColor *)secondaryColor
-                     scale:(CGFloat)scale;
+
+- (nullable UIImage *)imageWithSize:(CGSize)size
+                       primaryColor:(UIColor *)primaryColor
+                     secondaryColor:(UIColor *)secondaryColor
+                              scale:(CGFloat)scale;
+
 @end
+
+NS_SWIFT_NAME(FBProfilePictureViewState)
+@interface FBSDKProfilePictureViewState
+@end
+
+@interface FBSDKProfilePictureView (Testing)
+
+- (void)_accessTokenDidChangeNotification:(NSNotification *)notification;
+- (void)_profileDidChangeNotification:(NSNotification *)notification;
+- (void)_updateImageWithProfile;
+- (void)_updateImageWithAccessToken;
+- (void)_updateImage;
+- (void)_fetchAndSetImageWithURL:(NSURL *)imageURL state:(FBSDKProfilePictureViewState *)state;
+- (nullable FBSDKProfilePictureViewState *)lastState;
+
+@end
+
+@interface FBSDKAccessToken (Testing)
+
++ (void)setCurrentAccessToken:(nullable FBSDKAccessToken *)token
+          shouldDispatchNotif:(BOOL)shouldDispatchNotif;
+
+@end
+
+@interface FBSDKProfile (Testing)
+
++ (void)setCurrentProfile:(nullable FBSDKProfile *)profile
+   shouldPostNotification:(BOOL)shouldPostNotification;
+
+@end
+
+@interface FBSDKAuthenticationToken (Testing)
+
+- (instancetype)initWithTokenString:(NSString *)tokenString
+                              nonce:(NSString *)nonce
+                             claims:(nullable FBSDKAuthenticationTokenClaims *)claims
+                                jti:(NSString *)jti;
+
++ (void)setCurrentAuthenticationToken:(nullable FBSDKAuthenticationToken *)token
+               shouldPostNotification:(BOOL)shouldPostNotification;
+
+@end
+
+NS_ASSUME_NONNULL_END

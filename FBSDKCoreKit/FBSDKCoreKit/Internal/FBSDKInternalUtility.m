@@ -51,9 +51,8 @@ static dispatch_once_t *fetchUrlSchemesToken;
 
 static BOOL ShouldOverrideHostWithGamingDomain(NSString *hostPrefix)
 {
-  return
-  [[FBSDKAccessToken currentAccessToken] respondsToSelector:@selector(graphDomain)]
-  && [[FBSDKAccessToken currentAccessToken].graphDomain isEqualToString:@"gaming"]
+  return [FBSDKAuthenticationToken.currentAuthenticationToken respondsToSelector:@selector(graphDomain)]
+  && [FBSDKAuthenticationToken.currentAuthenticationToken.graphDomain isEqualToString:@"gaming"]
   && ([hostPrefix isEqualToString:@"graph."] || [hostPrefix isEqualToString:@"graph-video."]);
 }
 
@@ -157,6 +156,36 @@ static BOOL ShouldOverrideHostWithGamingDomain(NSString *hostPrefix)
                       defaultVersion:(NSString *)defaultVersion
                                error:(NSError *__autoreleasing *)errorRef
 {
+  NSString *version = (defaultVersion.length > 0) ? defaultVersion : [FBSDKSettings graphAPIVersion];
+  if (version.length) {
+    version = [@"/" stringByAppendingString:version];
+  }
+
+  return [self _facebookURLWithHostPrefix:hostPrefix
+                                     path:path
+                          queryParameters:queryParameters
+                           defaultVersion:version
+                                    error:errorRef];
+}
+
++ (NSURL *)unversionedFacebookURLWithHostPrefix:(NSString *)hostPrefix
+                                           path:(NSString *)path
+                                queryParameters:(NSDictionary *)queryParameters
+                                          error:(NSError *__autoreleasing *)errorRef
+{
+  return [self _facebookURLWithHostPrefix:hostPrefix
+                                     path:path
+                          queryParameters:queryParameters
+                           defaultVersion:@""
+                                    error:errorRef];
+}
+
++ (NSURL *)_facebookURLWithHostPrefix:(NSString *)hostPrefix
+                                 path:(NSString *)path
+                      queryParameters:(NSDictionary *)queryParameters
+                       defaultVersion:(NSString *)version
+                                error:(NSError *__autoreleasing *)errorRef
+{
   if (hostPrefix.length && ![hostPrefix hasSuffix:@"."]) {
     hostPrefix = [hostPrefix stringByAppendingString:@"."];
   }
@@ -171,11 +200,6 @@ static BOOL ShouldOverrideHostWithGamingDomain(NSString *hostPrefix)
     host = [[NSString alloc] initWithFormat:@"%@.%@", domainPart, host];
   }
   host = [NSString stringWithFormat:@"%@%@", hostPrefix ?: @"", host ?: @""];
-
-  NSString *version = (defaultVersion.length > 0) ? defaultVersion : [FBSDKSettings graphAPIVersion];
-  if (version.length) {
-    version = [@"/" stringByAppendingString:version];
-  }
 
   if (path.length) {
     NSScanner *versionScanner = [[NSScanner alloc] initWithString:path];

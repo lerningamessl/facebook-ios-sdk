@@ -58,7 +58,6 @@
 + (void)resetFacebookDisplayNameCache;
 + (void)resetFacebookDomainPartCache;
 + (void)resetFacebookJpegCompressionQualityCache;
-+ (void)resetFacebookAutoInitEnabledCache;
 + (void)resetFacebookInstrumentEnabledCache;
 + (void)resetFacebookAutoLogAppEventsEnabledCache;
 + (void)resetFacebookAdvertiserIDCollectionEnabledCache;
@@ -91,6 +90,7 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
   [self setUpFeatureManagerMock];
   [self setUpNSUserDefaultsMock];
   [self setUpAccessTokenMock];
+  [self setUpAuthenticationTokenClassMock];
   [self setUpProfileMock];
   [self setUpSKAdNetworkMock];
   [self setUpNSNotificationCenterMock];
@@ -150,6 +150,9 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
 
   [_accessTokenClassMock stopMocking];
   _accessTokenClassMock = nil;
+
+  [_authenticationTokenClassMock stopMocking];
+  _authenticationTokenClassMock = nil;
 
   [_profileClassMock stopMocking];
   _profileClassMock = nil;
@@ -242,7 +245,18 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
 
 - (void)setUpAppEventsMock
 {
-  _appEventsMock = OCMClassMock(FBSDKAppEvents.class);
+  if (self.shouldAppEventsMockBePartial) {
+    // Since the `init` method is marked unavailable but just as a measure to prevent creating multiple
+    // instances and enforce the singleton pattern, we will circumvent that by casting to a plain `NSObject`
+    // after `alloc` in order to call `init`.
+    _appEventsMock = OCMPartialMock([(NSObject *)[FBSDKAppEvents alloc] init]);
+  } else {
+    _appEventsMock = OCMClassMock([FBSDKAppEvents class]);
+  }
+
+  // Since numerous areas in FBSDK can end up calling `[FBSDKAppEvents singleton]`,
+  // we will stub the singleton accessor out for our mock instance.
+  OCMStub([_appEventsMock singleton]).andReturn(_appEventsMock);
 
   _appEventStatesMock = OCMClassMock([FBSDKAppEventsState class]);
   OCMStub([_appEventStatesMock alloc]).andReturn(_appEventStatesMock);
@@ -267,6 +281,11 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
 - (void)setUpAccessTokenMock
 {
   self.accessTokenClassMock = OCMStrictClassMock(FBSDKAccessToken.class);
+}
+
+- (void)setUpAuthenticationTokenClassMock
+{
+  self.authenticationTokenClassMock = OCMStrictClassMock(FBSDKAuthenticationToken.class);
 }
 
 - (void)setUpProfileMock
@@ -432,17 +451,9 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
   OCMStub(ClassMethod([_settingsClassMock _logIfSDKSettingsChanged]));
 }
 
-- (void)stubAccessTokenCacheWith:(FakeAccessTokenCache *)cache
+- (void)stubTokenCacheWith:(FakeTokenCache *)cache
 {
-  OCMStub(ClassMethod([_settingsClassMock accessTokenCache])).andReturn(cache);
-}
-
-- (void)stubIsAutoInitEnabled:(BOOL)isEnabled
-{
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  OCMStub(ClassMethod([_settingsClassMock isAutoInitEnabled])).andReturn(isEnabled);
-  #pragma clang diagnostic pop
+  OCMStub(ClassMethod([_settingsClassMock tokenCache])).andReturn(cache);
 }
 
 - (void)stubIsAutoLogAppEventsEnabled:(BOOL)isEnabled
@@ -472,11 +483,6 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
   OCMStub(ClassMethod([_nsNotificationCenterClassMock defaultCenter])).andReturn(notificationCenter);
 }
 
-- (void)stubAppEventsSingletonWith:(FBSDKAppEvents *)appEventsInstance
-{
-  OCMStub([_appEventsMock singleton]).andReturn(appEventsInstance);
-}
-
 - (void)stubDefaultMeasurementEventListenerWith:(FBSDKMeasurementEventListener *)eventListener
 {
   OCMStub([_measurementEventListenerClassMock defaultListener]).andReturn(eventListener);
@@ -485,6 +491,11 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
 - (void)stubCurrentAccessTokenWith:(FBSDKAccessToken *)token
 {
   OCMStub(ClassMethod([_accessTokenClassMock currentAccessToken])).andReturn(token);
+}
+
+- (void)stubCurrentAuthenticationTokenWith:(FBSDKAuthenticationToken *)token
+{
+  OCMStub(ClassMethod([_authenticationTokenClassMock currentAuthenticationToken])).andReturn(token);
 }
 
 - (void)stubGraphAPIVersionWith:(NSString *)version
@@ -567,16 +578,6 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
   OCMStub(ClassMethod([_settingsClassMock isDataProcessingRestricted])).andReturn(isRestricted);
 }
 
-- (void)stubDate
-{
-  OCMStub([_nsDateClassMock date]).andReturn(_nsDateClassMock);
-}
-
-- (void)stubTimeIntervalSince1970WithTimeInterval:(NSTimeInterval)interval
-{
-  OCMStub([_nsDateClassMock timeIntervalSince1970]).andReturn(interval);
-}
-
 - (void)stubFacebookDomainPartWith:(NSString *)domainPart
 {
   OCMStub(ClassMethod([_settingsClassMock facebookDomainPart])).andReturn(domainPart);
@@ -633,7 +634,6 @@ typedef void (^FBSDKSKAdNetworkReporterBlock)(void);
   [FBSDKSettings resetFacebookDisplayNameCache];
   [FBSDKSettings resetFacebookDomainPartCache];
   [FBSDKSettings resetFacebookJpegCompressionQualityCache];
-  [FBSDKSettings resetFacebookAutoInitEnabledCache];
   [FBSDKSettings resetFacebookInstrumentEnabledCache];
   [FBSDKSettings resetFacebookAutoLogAppEventsEnabledCache];
   [FBSDKSettings resetFacebookAdvertiserIDCollectionEnabledCache];

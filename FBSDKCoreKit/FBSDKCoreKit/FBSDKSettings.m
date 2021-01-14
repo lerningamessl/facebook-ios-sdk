@@ -118,6 +118,7 @@ FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(NSNumber, FacebookJpegCompression
 FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(NSNumber, FacebookInstrumentEnabled, _instrumentEnabled, _setInstrumentEnabled, @1, YES);
 FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(NSNumber, FacebookAutoLogAppEventsEnabled, _autoLogAppEventsEnabled, _setAutoLogAppEventsEnabled, @1, YES);
 FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(NSNumber, FacebookAdvertiserIDCollectionEnabled, _advertiserIDCollectionEnabled, _setAdvertiserIDCollectionEnabled, @1, YES);
+FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(NSNumber, FacebookAnonymousIDCollectionEnabled, _anonymousIDCollectionEnabled, _setAnonymousIDCollectionEnabled, @1, YES);
 FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(
   NSNumber,
   FacebookCodelessDebugLogEnabled,
@@ -185,6 +186,16 @@ FBSDKSETTINGS_PLIST_CONFIGURATION_SETTING_IMPL(
 + (void)setAdvertiserIDCollectionEnabled:(BOOL)advertiserIDCollectionEnabled
 {
   [self _setAdvertiserIDCollectionEnabled:@(advertiserIDCollectionEnabled)];
+}
+
++ (BOOL)isAnonymousIDCollectionEnabled
+{
+    return [self _anonymousIDCollectionEnabled].boolValue;
+}
+
++ (void)setAnonymousIDCollectionEnabled:(BOOL)anonymousIDCollectionEnabled
+{
+  [self _setAnonymousIDCollectionEnabled:@(anonymousIDCollectionEnabled)];
 }
 
 + (void)setTrackingEnabledBlock:(FBSDKIDFATrackingEnabledBlock)trackingEnabledBlock {

@@ -365,7 +365,7 @@ _fbsdkdfl_handle_get_impl_(AdSupport)
 
 Class fbsdkdfl_ASIdentifierManagerClass(void)
 {
-  _fbsdkdfl_AdSupport_get_c(ASIdentifierManager);
+  //_fbsdkdfl_AdSupport_get_c(ASIdentifierManager);
   return c;
 }
 
